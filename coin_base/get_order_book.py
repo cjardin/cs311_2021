@@ -13,6 +13,16 @@ ch.setFormatter(formatter)
 logger.addHandler(ch)
 
 
+def store_it( data, state):
+    print("stored")
+
+def should_i_buy( data, state):
+    print("YES")
+
+def should_i_sell( data, state):
+    print("YES")
+
+in_stream_proc = [ store_it, [should_i_buy, should_i_sell] ] 
 
 class coin_base_feed:
     def __init__(self):
@@ -60,7 +70,8 @@ class coin_base_feed:
         data = json.loads(message)
 
         if data['type'] == 'l2update':
-            print(data['changes'])
+            for p in in_stream_proc:
+                p(data['changes'], None)
 
 cbb_f = coin_base_feed()
 cbb_f.start()
