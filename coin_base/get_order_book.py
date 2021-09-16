@@ -12,17 +12,14 @@ formatter = logging.Formatter('%(asctime)s - %(name)s %(funcName)s():%(lineno)i:
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
+#workers
+from work_functions.store_functions import print_it
+from work_functions.store_functions import store_json
+from work_functions.store_functions import  store_change_data
 
-def store_it( data, state):
-    print("stored")
 
-def should_i_buy( data, state):
-    print("YES")
 
-def should_i_sell( data, state):
-    print("YES")
-
-in_stream_proc = [ store_it, [should_i_buy, should_i_sell] ] 
+in_stream_proc = [ print_it, store_json,  store_change_data] 
 
 class coin_base_feed:
     def __init__(self):
@@ -71,7 +68,7 @@ class coin_base_feed:
 
         if data['type'] == 'l2update':
             for p in in_stream_proc:
-                p(data['changes'], None)
+                p(data, None)
 
 cbb_f = coin_base_feed()
 cbb_f.start()
