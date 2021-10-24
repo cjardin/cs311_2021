@@ -31,14 +31,15 @@ if __name__ == "__main__":
         for i in range(2):
             p = players[i] 
             if i == 0:
-                proc = subprocess.Popen([p['runme'], f"--init true --iterations {iterations}"], 
+                proc = subprocess.Popen([f"{p['runme']} --init true --iterations {iterations}"], 
                         stdout=subprocess.PIPE, shell=True , cwd= p['dir_name'])
                 (out, err) = proc.communicate()
            
             last_move = players[0]['last_move'] if i == 1 else players[1]['last_move']
-            proc = subprocess.Popen([p['runme'], f"--last_opponent_move confess {last_move}"],
+            proc = subprocess.Popen([f"{p['runme']} --last_opponent_move {last_move}"],
                     stdout=subprocess.PIPE, shell=True , cwd= p['dir_name'])
             (out, err) = proc.communicate()
+            #print(out)
             p['current_move'] = out.strip().lower().decode("utf-8")
 
 
