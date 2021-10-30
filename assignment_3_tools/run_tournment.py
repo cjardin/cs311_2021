@@ -15,6 +15,7 @@ def run_game(player_a, player_b):
         p['current_move'] = "zero"
 
     for i  in range(iterations):
+        error = False
         for i in range(2):
             p = players[i] 
             if i == 0:
@@ -28,8 +29,13 @@ def run_game(player_a, player_b):
             (out, err) = proc.communicate()
             #print(out)
             p['current_move'] = out.strip().lower().decode("utf-8")
+            if p['current_move'] not in ('silent', 'confess'):
+                p['error'] = f"""Invalid output "{p['current_move']}" """
+                error = True
 
-
+        if error:
+            break
+        
         #score it!
         if players[0]['current_move'] == "confess" and players[1]['current_move'] == "confess":
             players[0]['game_years'] = players[0]['game_years'] + 5 
@@ -50,9 +56,9 @@ def run_game(player_a, player_b):
         players[1]['last_move'] = players[0]['current_move']
 
     if players[0]['game_years'] > players[1]['game_years']:
-        print(f"Player {players[1]['player name']} wins {players[1]['game_years']} < {players[0]['game_years']}")
+        print(f"Player {players[1]['player']} wins {players[1]['game_years']} < {players[0]['game_years']}")
     elif players[1]['game_years'] > players[0]['game_years']:
-        print(f"Player {players[0]['player name']} wins {players[0]['game_years']} < {players[1]['game_years']}")
+        print(f"Player {players[0]['player']} wins {players[0]['game_years']} < {players[1]['game_years']}")
     else:
         print(f"Tie {players[0]['game_years']} = {players[1]['game_years']}")
 
@@ -74,7 +80,6 @@ with open("forkme.list", "r") as f:
 os.system(f"rm -rf {PULL_DIR}")
 
 players = []
-bad_players = []
 #load them up
 for f in fork_list:
     os.system(f"mkdir -p {PULL_DIR}/{f['github_user']}")
@@ -83,21 +88,44 @@ for f in fork_list:
 
     try:
         with open(f"{PULL_DIR}/{f['github_user']}/assignment3/runme.txt", "r") as runtxt:
-            players.append({"player" : f"{f['github_user']}", "runtxt" : runtxt.read()})
+            players.append({"player" : f"{f['github_user']}", "runme" : runtxt.read().strip(),
+                     "dir_name" : os.path.dirname(f"{PULL_DIR}/{f['github_user']}/assignment3/runme.txt")
+                })
     except:
-        bad_players.append(f['github_user'])
+        players.append({"player": f['github_user'], "error" : "runme.txt did not load!!!!" } )
         print(f"!!!!!!!!!!! Player {f['github_user']} did not load!!!!!!")
 
 
-
-print("Good")
+#init
 for p in players:
-    print(p)
-for p in bad_players:
-    print(p)
+    p["who_i_played_this_round"] = []
+for p in players:
+    if "error" in p:
+        continue
+    for pp in players:
+        if pp == p or "error" in pp:
+            continue
+        if pp in p["who_i_played_this_round"] or p in pp["who_i_played_this_round"] :
+            continue 
+
+        print(p["player"],pp["player"])
+        run_game(p, pp)
+        p["who_i_played_this_round"].append(pp)
 
 
-run_game(players[0], players[1])
+for p in players:
+    if "error" in p:
+        print( f"{p['player']} you have a problem! {p['error']})")
+    else:
+        print( f"{p['player']} YES!!!! It worked!!!")
+
+#print("!!!!Good!!!!")
+#for p in players:
+#    print(p)
+#print("!!!BAD!!")
+#for p in bad_players:
+#    print(p)
+
 
 #run_txt = ""
 #with open("runme.txt", "r") as f:
