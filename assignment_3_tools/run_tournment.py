@@ -3,6 +3,8 @@ import argparse
 import random
 import subprocess
 
+import sqlite3
+
 
 
 def run_game(player_a, player_b):
@@ -67,10 +69,24 @@ def run_game(player_a, player_b):
     else:
         print(f"Tie {players[0]['game_years']} = {players[1]['game_years']}")
 
+    return (players[0]['game_years'], players[1]['game_years'], int( 'error' in  players[0]), int( 'error' in  players[1]) )
+
 
 PULL_DIR = "repos"
 
 fork_list = []
+black_list = {}
+
+with open("black.list", "r") as f:
+    all_forks = f.read()
+    for ffork in all_forks.split('\n'):
+        parts = ffork.split()
+        # example line ['@atilla20cs', 'atilla20cs', '/', 'cs311_2021']
+        if len(parts) != 4:
+            continue
+        black_list[parts[1]] = "block"
+
+
 with open("forkme.list", "r") as f:
     all_forks = f.read()
     for ffork in all_forks.split('\n'):
@@ -78,13 +94,16 @@ with open("forkme.list", "r") as f:
         # example line ['@atilla20cs', 'atilla20cs', '/', 'cs311_2021']
         if len(parts) != 4:
             continue
-        fork_list.append( {"github_user" : parts[1], "repo" : parts[3]} )
+        if parts[1] in black_list:
+            continue
 
+        fork_list.append( {"github_user" : parts[1], "repo" : parts[3]} )
 
 #clean up
 os.system(f"rm -rf {PULL_DIR}")
 
 players = []
+players_by_name = {}
 #load them up
 for f in fork_list:
     os.system(f"mkdir -p {PULL_DIR}/{f['github_user']}")
@@ -99,42 +118,80 @@ for f in fork_list:
     except:
         players.append({"player": f['github_user'], "error" : "runme.txt did not load!!!!" } )
         print(f"!!!!!!!!!!! Player {f['github_user']} did not load!!!!!!")
+    players_by_name[ players[-1]['player'] ] = players[-1]
 
+
+
+#setup the db
+
+db = sqlite3.connect('tourment.db')
+cur = db.cursor()
+
+
+cur.execute("create table games (player_a text, player_b text, t_round interger, player_a_years integer, player_b_years integer, player_a_error int, player_b_error int)")
+db.commit()
 
 #init
-for p in players:
-    p["who_i_played_this_round"] = []
-for p in players:
-    if "error" in p:
-        continue
-    for pp in players:
-        if pp == p or "error" in pp:
+t_round = 0
+
+while t_round < 100: #Just don't like inifinate loops 
+    random.shuffle(players)
+    for p in players:
+        p["who_i_played_this_round"] = []
+    for p in players:
+        if "error" in p:
             continue
-        if pp in p["who_i_played_this_round"] or p in pp["who_i_played_this_round"] :
-            continue 
+        for pp in players:
+            if pp == p or "error" in pp:
+                continue
+            if pp in p["who_i_played_this_round"] or p in pp["who_i_played_this_round"] :
+                continue 
 
-        print(p["player"],pp["player"])
-        run_game(p, pp)
-        p["who_i_played_this_round"].append(pp)
+            print(p["player"],pp["player"])
+            player_a_years, player_b_years, player_a_err, player_b_err = run_game(p, pp)
+            p["who_i_played_this_round"].append(pp)
+            cur.execute(f"""insert into games values ('{p["player"]}', '{pp["player"]}',
+                    {t_round}, {player_a_years}, {player_b_years},
+                    {player_a_err} , {player_b_err} )""")
+            db.commit()
 
 
-good = []
-bad = []
-for p in players:
-    if "error" in p:
+
+    #get bad list
+    bad =[]
+    cur.execute(f"""select player_a from games where t_round = {t_round} and player_a_error =1
+            UNION 
+            select player_b from games where t_round = {t_round} and player_b_error =1 """)
+    for r in cur.fetchall():
+        p =  players_by_name[ r[0] ]
         bad.append( f"{p['player']} you have a problem! {p['error']}")
-    else:
-        good.append(f"{p['player']} YES!!!! It worked!!!")
 
-print("!!!!!!!!! Working !!!!!!!!!!!")
-for p in good:
-    print(p)
+    #get good list
+    good =[]
+    cur.execute(f"""select player_a from games where t_round = {t_round} and player_a_error =0
+            UNION
+            select player_b from games where t_round = {t_round} and player_b_error =0 """)
+    for r in cur.fetchall():
+        p = players_by_name[ r[0] ]
+        good.append( f"{p['player']} YES!!!! It worked!!!" )
 
-print("")
-print("!!!!!!!!! NOT Working !!!!!!!!!!!")
-for p in bad:
-    print(p)
 
+    print("!!!!!!!!! Working !!!!!!!!!!!")
+    for p in good:
+        print(p)
+
+    print("")
+    print("!!!!!!!!! NOT Working !!!!!!!!!!!")
+    for p in bad:
+        print(p)
+
+    print("")
+    print("!!!!!!!!! NOT Accepted LIST !!!!!!!!!!!")
+    for p in black_list:
+        print(p)
+
+    t_round += 1
+    break
 
 
 
