@@ -16,21 +16,26 @@ def run_game(player_a, player_b):
 
     for i  in range(iterations):
         error = False
-        for i in range(2):
-            p = players[i] 
+        for j in [0,1]:
+            p = players[j] 
             if i == 0:
                 proc = subprocess.Popen([f"{p['runme']} --init true --iterations {iterations}"], 
-                        stdout=subprocess.PIPE, shell=True , cwd= p['dir_name'])
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True , cwd= p['dir_name'])
                 (out, err) = proc.communicate()
+                
+                err = err.decode("utf-8").strip()
+                if len(err) != 0:
+                    p['error'] = f"""Init Error .. crashed - {err}"""
+                    error = True
     
             last_move = players[0]['last_move'] if i == 1 else players[1]['last_move']
             proc = subprocess.Popen([f"{p['runme']} --last_opponent_move {last_move}"],
-                    stdout=subprocess.PIPE, shell=True , cwd= p['dir_name'])
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,  shell=True , cwd= p['dir_name'])
             (out, err) = proc.communicate()
-            #print(out)
             p['current_move'] = out.strip().lower().decode("utf-8")
-            if p['current_move'] not in ('silent', 'confess'):
-                p['error'] = f"""Invalid output "{p['current_move']}" """
+            err = err.decode("utf-8").strip()
+            if len(err) != 0  or p['current_move'] not in ('silent', 'confess'):
+                p['error'] = f"""Invalid output "{p['current_move']}" stderr: {err} """
                 error = True
 
         if error:
@@ -52,8 +57,8 @@ def run_game(player_a, player_b):
         else:
             print(players)
             print("!!!!!!!!!!!!!!!!!!!!Error!!!!!!!!!!!!!!")
-        players[0]['last_move'] = players[1]['current_move'] 
-        players[1]['last_move'] = players[0]['current_move']
+        players[0]['last_move'] = players[0]['current_move'] 
+        players[1]['last_move'] = players[1]['current_move']
 
     if players[0]['game_years'] > players[1]['game_years']:
         print(f"Player {players[1]['player']} wins {players[1]['game_years']} < {players[0]['game_years']}")
@@ -113,25 +118,23 @@ for p in players:
         p["who_i_played_this_round"].append(pp)
 
 
+good = []
+bad = []
 for p in players:
     if "error" in p:
-        print( f"{p['player']} you have a problem! {p['error']})")
+        bad.append( f"{p['player']} you have a problem! {p['error']}")
     else:
-        print( f"{p['player']} YES!!!! It worked!!!")
+        good.append(f"{p['player']} YES!!!! It worked!!!")
 
-#print("!!!!Good!!!!")
-#for p in players:
-#    print(p)
-#print("!!!BAD!!")
-#for p in bad_players:
-#    print(p)
+print("!!!!!!!!! Working !!!!!!!!!!!")
+for p in good:
+    print(p)
 
+print("")
+print("!!!!!!!!! NOT Working !!!!!!!!!!!")
+for p in bad:
+    print(p)
 
-#run_txt = ""
-#with open("runme.txt", "r") as f:
-#    run_txt = f.read().strip()
-
-#os.system(f"{run_txt} --help")
 
 
 
