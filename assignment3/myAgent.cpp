@@ -62,7 +62,7 @@ int main(int argc, char* argv[]) {
   queue<double> Numque;
   string arg = argv[2];
   
-  cout << arg << endl;
+ // cout << arg << endl;
 
   if(arg == "silent"){
     num = readFromFile("strat.txt");
