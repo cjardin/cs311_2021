@@ -60,26 +60,27 @@ double PrintAction(queue<double>& myQueue,int pass_move)
 int main(int argc, char* argv[]) {
   double num;
   queue<double> Numque;
-  string arg = argv[1];
+  string arg = argv[2];
   
   cout << arg << endl;
 
-  if(arg == "--silent"){
+  if(arg == "silent"){
     num = readFromFile("strat.txt");
     Numque.push(num);
-    //1 = El oponente hizo silencio
+    //1 = Opponent stayed silent
     num = PrintAction(Numque,0);
     writeToFile("strat.txt",num);
   }
-  else if(arg == "--confess") {
+  else if(arg == "confess") {
     num = readFromFile("strat.txt");
     Numque.push(num);
-    //1 = El oponente confeso
+    //1 = opponent confessed
     num = PrintAction(Numque,1);
     writeToFile("strat.txt",num);
   }
   else{
     writeToFile("strat.txt",0.5);
+    cout << "confess" << endl;
   }
   
   return 0;
