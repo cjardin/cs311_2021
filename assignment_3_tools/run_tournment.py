@@ -10,7 +10,7 @@ import sqlite3
 def run_game(player_a, player_b):
     players = [player_a, player_b]
     iterations = 100 
-    for i in range(2):
+    for i in [0,1]:
         p = players[i]
         p['game_years'] = 0 
         p['last_move'] = "zero"
@@ -30,7 +30,7 @@ def run_game(player_a, player_b):
                     p['error'] = f"""Init Error .. crashed - {err}"""
                     error = True
     
-            last_move = players[0]['last_move'] if i == 1 else players[1]['last_move']
+            last_move = players[0]['last_move'] if j == 1 else players[1]['last_move']
             proc = subprocess.Popen([f"{p['runme']} --last_opponent_move {last_move}"],
                     stdout=subprocess.PIPE, stderr=subprocess.PIPE,  shell=True , cwd= p['dir_name'])
             (out, err) = proc.communicate()
@@ -133,7 +133,6 @@ db.commit()
 
 #init
 t_round = 0
-
 while t_round < 100: #Just don't like inifinate loops 
     random.shuffle(players)
     for p in players:
@@ -168,9 +167,9 @@ while t_round < 100: #Just don't like inifinate loops
 
     #get good list
     good =[]
-    cur.execute(f"""select player_a from games where t_round = {t_round} and player_a_error =0
+    cur.execute(f"""select player_a from games where t_round = {t_round} and player_a_error =0 and player_a_years <= player_b_years
             UNION
-            select player_b from games where t_round = {t_round} and player_b_error =0 """)
+            select player_b from games where t_round = {t_round} and player_b_error =0 and player_b_years <= player_a_years """)
     for r in cur.fetchall():
         p = players_by_name[ r[0] ]
         good.append( f"{p['player']} YES!!!! It worked!!!" )
@@ -189,6 +188,16 @@ while t_round < 100: #Just don't like inifinate loops
     print("!!!!!!!!! NOT Accepted LIST !!!!!!!!!!!")
     for p in black_list:
         print(p)
+
+
+    #who moves on?
+    cur.execute(f"""select player, sum(total) as total from
+                (select player_b as player, sum(player_b_years) as total from games where 
+                t_round = {t_round} and player_b_error =0 group by player union select player_a as player, sum(player_a_years) as total from 
+                games where t_round = {t_round} and player_a_error =0 group by player) group by player order by total asc;""")
+    for r in cur.fetchall():
+        print(r)
+
 
     t_round += 1
     break
