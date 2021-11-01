@@ -141,7 +141,6 @@ while t_round < 100: #Just don't like inifinate loops
         if "error" in p:
             continue
         for pp in players:
-            play_count += 1
             if pp == p or "error" in pp:
                 continue
             if pp in p["who_i_played_this_round"] or p in pp["who_i_played_this_round"] :
