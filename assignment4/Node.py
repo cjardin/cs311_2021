@@ -19,7 +19,7 @@ class Node:
         #first_born = self.children[0]
         # end of addition
 
-        self.children[0].make_children( current_layer_number + 1, node_per_layer_map)
+    self.children[0].make_children( current_layer_number + 1, node_per_layer_map)
 
         for i in range(1, leng(self.children) ):
             self.children[i].children = self.children[0].children[:]
