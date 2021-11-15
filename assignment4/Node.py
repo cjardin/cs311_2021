@@ -58,19 +58,20 @@ class Node:
             print(f"{indent}with weight {self.children_connection_weights[i]} ")
             return
 
-        new_node = []
-        master_node = Node()
-        self.children[0] = Node()
-        self.children[0].make_children(0, NODE_COUNT_PER_LAYER)
-        master_node.children.append( self.children[0] )
+    new_node = []
+    #new_node = Node()
+    #master_node = Node()
+    self.children[0] = Node()
+    self.children[0].make_children(0, NODE_COUNT_PER_LAYER)
+    new_node.children.append( self.children[0] )
 
-        for i in range( 0, len(NODE_COUNT_PER_LAYER) ):
-            new_node = Node()
-            new_node.children = self.children[0].children[:]
-            master_node.children.append(new_node)
+    for i in range( 0, len(NODE_COUNT_PER_LAYER) ):
+        new_node = Node()
+        new_node.children = self.children[0].children[:]
+        new_node.children.append(new_node)
 
-        master_node.print_children(0)
-        print("!! Set Weights !!")
+    master_node.print_children(0)
+    print("!! Set Weights !!")
 
-        master_node.adjust_child_weights()
-        master_node.print_children(0)
+    new_node.adjust_child_weights()
+    new_node.print_children(0)
