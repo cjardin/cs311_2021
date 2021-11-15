@@ -1,4 +1,3 @@
-
 import random
 import string
 
@@ -25,7 +24,6 @@ class Node:
         first_node = self.children[0]
         first_node.make_children(current_layer_number + 1, node_per_layer_map)
     
-
         for i in range(1, len(self.children)):
             self.children[i].children = first_node.children[:] 
 
@@ -48,14 +46,11 @@ class Node:
 
         print(f"{indent}{self.node_name} is connected to ")
 
-
         for i in range(len(self.children)):
             self.children[i].print_children(layer + 1)
             
             if i < len(self.children_connection_weights):
                 print(f"{indent}with weight {self.children_connection_weights[i]} ")
-                
-
 
 nodes = []
 master_node = Node()
@@ -70,8 +65,6 @@ for i in range(0, len(NODE_COUNT_PER_LAYER)):
 
 master_node.print_children(0)
 print("SET WEIGHTS:")
-
 master_node.adjust_child_weights()
 master_node.print_children(0)
-
 
