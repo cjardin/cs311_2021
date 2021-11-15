@@ -3,8 +3,9 @@ import string
 import networkx as nx
 
 NODE_COUNT_PER_LAYER = [4,3,2]
+
 #trial
-G = nx.DiGraph()
+G = nx.MultiDiGraph()
 #
 
 class Node:
@@ -33,7 +34,7 @@ class Node:
     
 
         for i in range(1, len(self.children)):
-            self.children[i].children = first_born.children[:] 
+            self.children[i].children = first_born.children[:]
 
     def adjust_child_weights(self):
         
@@ -44,7 +45,7 @@ class Node:
 
         for i in range(len(self.children)):
             self.children_connection_weights.append(random.uniform(0, 1))
-            self.children[i].adjust_child_weights()
+            G.add_node(self.children[i].adjust_child_weights())
 
     def print_children(self, layer):
         indent = '    ' *  layer
@@ -62,11 +63,12 @@ class Node:
             if i < len(self.children_connection_weights):
                 print(f"{indent}with weight {self.children_connection_weights[i]} ")
 
-    def add_edges(self, edge):
+    
+       #def add_edges(self, edge):
         
-        for i in range(len(self.edges)):
-            G.add_edges_from(edges[i].add_edges(edge + 1))
-            edges[i] = ([(self.children[i].print_children(layer), self.children[i].print_children(layer + 1))])
+     #   for i in range(len(self.edges)):
+       #     G.add_edges_from(edges[i].add_edges(edge + 1))
+      #      edges[i] = ([(self.children[i].print_children(layer), self.children[i].print_children(layer + 1))])
 
                 
 
@@ -78,14 +80,19 @@ master_node.children.append(first_born)
 
 for i in range(0, len(NODE_COUNT_PER_LAYER)):
     new_node = Node()
+    #G.add_noode(new_node)
     new_node.children = first_born.children[:]
     master_node.children.append(new_node)
+    #G.add_node(new_node)
 
 master_node.print_children(0)
 print("SET WEIGHTS:")
 
+#G.add_nodes_from(master_node.print_children(0))
 master_node.adjust_child_weights()
+#G.add_weighted_edges_from(master_node.print_children(0))
 master_node.print_children(0)
+
 nx.draw_networkx(G)
 
 
