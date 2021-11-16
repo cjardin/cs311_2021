@@ -146,7 +146,7 @@ while t_round < 100: #Just don't like inifinate loops
             if pp in p["who_i_played_this_round"] or p in pp["who_i_played_this_round"] :
                 continue 
 
-            print(p["player"],pp["player"])
+            print(f"Palyer {p['player']} vs {pp['player']}")
             player_a_years, player_b_years, player_a_err, player_b_err = run_game(p, pp)
             p["who_i_played_this_round"].append(pp)
             cur.execute(f"""insert into games values ('{p["player"]}', '{pp["player"]}',
@@ -195,12 +195,42 @@ while t_round < 100: #Just don't like inifinate loops
                 (select player_b as player, sum(player_b_years) as total from games where 
                 t_round = {t_round} and player_b_error =0 group by player union select player_a as player, sum(player_a_years) as total from 
                 games where t_round = {t_round} and player_a_error =0 group by player) group by player order by total asc;""")
+    ordered_players = []
     for r in cur.fetchall():
-        print(r)
+        ordered_players.append(r)
 
+    if len(ordered_players) == 1:
+        print("!!!!!!!!!! Winner !!!!!!!!!!!")
+        print(ordered_players)
+        break
+
+    top_half = ordered_players[:int(len(ordered_players)/2)]
+    print(f"Players Left {len(top_half)}")
+    if len(top_half) == 1:
+        print("!!!!!!!!!! Winner !!!!!!!!!!!")
+        print(top_half)
+        break
+
+    last_place = top_half[-1]
+    for i in range(int(len(ordered_players)/2), len(ordered_players)):
+        #just in case :)
+        if last_place[0] == ordered_players[i][0]:
+            continue
+        if last_place[1] == ordered_players[i][1]:
+            print(f"tie - {ordered_players[i]}")
+            top_half.append(ordered_players[i])
+
+    print("!!!!!!!!! Moving to Next Round !!!!!!!!")
+    new_players = []
+    for p in top_half:
+        print(p[0])
+        new_players.append( players_by_name[p[0]])
+    players = new_players
 
     t_round += 1
-    break
+    print(f"------------------Round {t_round} -----------")
+
+print("All done")
 
 
 
