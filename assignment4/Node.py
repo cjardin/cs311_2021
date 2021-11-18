@@ -6,65 +6,84 @@ NODE_COUNT_PER_LAYER = [4,3,2]
 class Node:
     def __init__(self):
         self.children = []
+        self.weight = []
         self.node_name = ''
-        
-        for i in range(3):
-            self.node_name += self.node_name.join([random.choice(string.ascii_letters)])
-            
-        self.children_connection_weights = []
+        random_letters = []
 
-    def make_children(self, current_layer_number, node_per_layer_map):
-        # >=
-        if current_layer_number == len(node_per_layer_map):
+        for i in range(3):
+            random_letters.append(random.choice(string.ascii_letters))
+            
+        self.node_name = ''.join(random_letters)
+        ''.join([random.choice(string.ascii_letters) for i in range(3)])
+
+    def make_children(self, layer, node_per_layer_map):
+        if layer >= len(node_per_layer_map):
             return
 
-        for i in range(node_per_layer_map[current_layer_number]):
-            self.children.append( Node())
+        for i in range(node_per_layer_map[layer]):
+            self.children.append(Node())
 
         first_node = self.children[0]
-        first_node.make_children(current_layer_number + 1, node_per_layer_map)
+        first_node.make_children(layer + 1, node_per_layer_map)
     
         for i in range(1, len(self.children)):
             self.children[i].children = first_node.children[:] 
 
-    def adjust_child_weights(self):
-        if len(self.children) == 0:
+    def adjust_child_weights(self, layer, node_per_layer_map):
+        #if len(self.children) == 0:
+         #   return
+
+        if layer >= len(node_per_layer_map):
             return
+        
+        #self.children_connection_weights = []
 
-        self.children_connection_weights = []
-
+        self.weight = [0.0] * len(self.children)
         for i in range(len(self.children)):
-            self.children_connection_weights.append(random.uniform(0, 1))
-            self.children[i].adjust_child_weights()
+            #self.weight[i].append(random.uniform(0, 1))
+            self.weight[i] = random.uniform(0,1)
+            self.children[i].adjust_child_weights(layer + 1, node_per_layer_map)
+        return
 
-    def print_children(self, layer):
+    def print_children(self, layer, node_per_layer_map):
         indent = '    ' *  layer
 
-        if len(self.children) == 0:
-            print(f"{indent}{self.node_name}")
+        if layer >= len(node_per_layer_map):
+            print(f"{indent} {self.node_name}")
             return
 
-        print(f"{indent}{self.node_name} is connected to ")
+        #if len(self.children) == 0:
+         #   print(f"{indent}{self.node_name}")
+          #  return
+
+        print(f"{indent} {self.node_name} is connected to:")
 
         for i in range(len(self.children)):
-            self.children[i].print_children(layer + 1)
+            try:
+                print(f"{indent} Weight of {self.weight[i]}")
+            except:
+                pass
+            self.children[i].print_children(layer + 1, node_per_layer_map)
+        return
             
-            if i < len(self.children_connection_weights):
-                print(f"{indent}with weight {self.children_connection_weights[i]} ")
+            #if i < len(self.children_connection_weights):
+             #   print(f"{indent}with weight {self.children_connection_weights[i]} ")
 
 nodes = []
 master_node = Node()
-first_node = Node()
-first_node.make_children(0, NODE_COUNT_PER_LAYER)
-master_node.children.append(first_node)
+#first_node = Node()
+#first_node.make_children(0, NODE_COUNT_PER_LAYER)
+#master_node.children.append(first_node)
+master_node.make_children(0, NODE_COUNT_PER_LAYER)
 
-for i in range(0, len(NODE_COUNT_PER_LAYER)):
-    new_node = Node()
-    new_node.children = first_node.children[:]
-    master_node.children.append(new_node)
+#for i in range(0, len(NODE_COUNT_PER_LAYER)):
+ #   new_node = Node()
+  #  new_node.children = first_node.children[:]
+   # master_node.children.append(new_node)
 
-master_node.print_children(0)
+#first_node.print_childeren(0, NODE_COUNT_PER_LAYER)
+master_node.print_children(0, NODE_COUNT_PER_LAYER)
 print("SET WEIGHTS:")
-master_node.adjust_child_weights()
-master_node.print_children(0)
+master_node.adjust_child_weights(0, NODE_COUNT_PER_LAYER)
+master_node.print_children(0, NODE_COUNT_PER_LAYER)
 
