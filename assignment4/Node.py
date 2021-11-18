@@ -35,8 +35,6 @@ class Node:
 
         if layer >= len(node_per_layer_map):
             return
-        
-        #self.children_connection_weights = []
 
         self.weight = [0.0] * len(self.children)
         for i in range(len(self.children)):
@@ -66,22 +64,13 @@ class Node:
             self.children[i].print_children(layer + 1, node_per_layer_map)
         return
             
-            #if i < len(self.children_connection_weights):
-             #   print(f"{indent}with weight {self.children_connection_weights[i]} ")
 
 nodes = []
 master_node = Node()
 #first_node = Node()
 #first_node.make_children(0, NODE_COUNT_PER_LAYER)
-#master_node.children.append(first_node)
+
 master_node.make_children(0, NODE_COUNT_PER_LAYER)
-
-#for i in range(0, len(NODE_COUNT_PER_LAYER)):
- #   new_node = Node()
-  #  new_node.children = first_node.children[:]
-   # master_node.children.append(new_node)
-
-#first_node.print_childeren(0, NODE_COUNT_PER_LAYER)
 master_node.print_children(0, NODE_COUNT_PER_LAYER)
 print("SET WEIGHTS:")
 master_node.adjust_child_weights(0, NODE_COUNT_PER_LAYER)
